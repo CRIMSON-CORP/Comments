@@ -17,17 +17,8 @@ const connection = mysql.createPool({
     host: "eu-cdbr-west-02.cleardb.net",
     password: "39e70696",
     port: 3306,
-    databse: "heroku_c37f37357b31eb0",
+    database: "heroku_c37f37357b31eb0",
 });
-
-connection.query(
-    "CREATE TABLE `comments_table` ( `id` VARCHAR(255) NULL AUTO_INCREMENT , `name` VARCHAR(255) NULL , `comment` VARCHAR(255) NULL , `date` VARCHAR(255) NULL , PRIMARY KEY (`id`))",
-    (err, rows) => {
-        console.log("Connecting");
-        if (err) console.log(err);
-        else console.log(rows);
-    }
-);
 
 function DATABASE() {
     return {

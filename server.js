@@ -13,5 +13,5 @@ app.listen(PORT, HOST, (err) => {
     if (err) {
         console.log(err);
     }
-    console.log("App is listening");
+    console.log("App is listening on PORT ", PORT);
 });
