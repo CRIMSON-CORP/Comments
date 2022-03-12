@@ -1,23 +1,13 @@
-const {
-    DATABASE_NAME,
-    TABLE_NAME,
-    APPROVED_TABLE_NAME,
-    ADMINS_TABLE_NAME,
-    DATABASE_HOST,
-    DATABASE_USERNAME,
-    DATABASE_PASSWORD,
-    DATABASE_PORT,
-} = require("../utils/constants");
+const { TABLE_NAME, APPROVED_TABLE_NAME, ADMINS_TABLE_NAME } = require("../utils/constants");
 const mysql = require("mysql");
 
 const connection = mysql.createPool({
-    user: "b3365554da4771",
-    database_url:
-        "mysql://b3365554da4771:39e70696@eu-cdbr-west-02.cleardb.net/heroku_c37f37357b31eb0?reconnect=true",
-    host: "eu-cdbr-west-02.cleardb.net",
-    password: "39e70696",
-    port: 3306,
-    database: "heroku_c37f37357b31eb0",
+    database_url: process.env.DATABASE_URL,
+    user: process.env.DATABASE_USERNAME,
+    host: process.env.DATABASE_HOST,
+    password: process.env.DATABASE_PASSWORD,
+    port: process.env.DATABASE_PORT,
+    database: process.env.DATABASE,
 });
 
 function DATABASE() {
