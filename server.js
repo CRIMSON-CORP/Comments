@@ -1,8 +1,8 @@
 const express = require("express");
 const path = require("path");
 const app = express();
-const PORT = 4000;
-const HOST = "localhost";
+const PORT = process.env.PORT || 4000;
+const HOST = process.env.HOST || "localhost";
 
 const router = require("./routes");
 app.use(express.static(path.join(__dirname, "public")));
