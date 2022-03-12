@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="./bootstrap/dist/css/bootstrap.min.css" />
+        <title>Authentication</title>
+    </head>
+    <body class="h-100">
+        <div class="container d-flex justify-content-center h-100 align-items-center">
+            <div class="card m-5 shadow-md w-50">
+                <div class="card-body">
+                    <h4 class="card-title"><h3 class="display-3 text-center">Sign in</h3></h4>
+                    <p class="card-text text-center mt-2">Are you an Admin?</p>
+                    <div class="alert-box"></div>
+                    <form action="" class="mt-4" id="auth">
+                        <div class="form-group">
+                            <label for="">Username</label>
+                            <input
+                                type="text"
+                                name="username"
+                                id="username"
+                                class="form-control"
+                                placeholder=""
+                                aria-describedby="helpId"
+                                required
+                            />
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="">Password</label>
+                            <input
+                                type="password"
+                                name="password"
+                                id="password"
+                                class="form-control"
+                                placeholder=""
+                                aria-describedby="helpId"
+                                required
+                            />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-4">
+                            <span>Submit</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script>
+            const form = document.getElementById("auth");
+            const alertBox = document.querySelector(".alert-box");
+            const submit = document.querySelector("button[type='submit'] span");
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                submit.className = "spinner-border spinner-border-sm";
+                submit.innerHTML = null;
+                const formData = new FormData(form);
+                const username = formData.get("username").trim();
+                const password = formData.get("password").trim();
+                try {
+                    const response = await fetch("http://localhost:4000/auth", {
+                        headers: {
+                            "content-type": "application/json",
+                            accept: "*/*",
+                        },
+                        method: "POST",
+                        body: JSON.stringify({
+                            username,
+                            password,
+                        }),
+                    });
+                    const data = await response.json();
+                    if (!data.success) {
+                        alertBox.innerHTML = `<div class="alert alert-danger" role="alert">
+                            <strong>${data.message}</strong>
+                        </div>`;
+
+                        setTimeout(() => {
+                            alertBox.innerHTML = null;
+                        }, 3000);
+                    } else {
+                        alertBox.innerHTML = `<div class="alert alert-success" role="alert">
+                            <strong>${data.message}</strong>
+                        </div>`;
+
+                        setTimeout(() => {
+                            alertBox.innerHTML = null;
+                            location.href = "/admin.html";
+                        }, 3000);
+                    }
+                } catch (error) {
+                } finally {
+                    submit.className = "";
+                    submit.innerHTML = "Submit";
+                }
+            });
+        </script>
+    </body>
+</html>

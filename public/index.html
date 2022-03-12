@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="./bootstrap/dist/css/bootstrap.min.css" />
+        <title>Comments</title>
+        <style>
+            body {
+                background-color: rgb(247, 247, 247);
+            }
+            .container .jumbotron {
+                border-radius: 16px;
+                background-color: white;
+            }
+            .avatar {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background-color: rgb(240, 240, 240);
+            }
+            .comment-header {
+                gap: 20px;
+            }
+            .lead {
+                font-weight: 700;
+                display: flex;
+                gap: 10px;
+            }
+            .dot {
+                width: 5px;
+                height: 5px;
+                border-radius: 50%;
+                background-color: black;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container mt-5">
+            <div class="row">
+                <h1 class="display-3">Please write a comment!</h1>
+                <form id="comment_form">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" name="name" class="form-control shadow-sm" required />
+                    </div>
+                    <div class="form-group mt-3">
+                        <label for="email">Comment</label>
+                        <textarea
+                            name="comment"
+                            id="comment"
+                            cols="30"
+                            rows="10"
+                            class="form-control shadow-sm"
+                            required
+                        ></textarea>
+                    </div>
+                    <div class="alert-box"></div>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary"><span>Submit</span></button>
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                    </div>
+                </form>
+            </div>
+            <div class="row mt-5">
+                <h1 class="display-3">All Comments!</h1>
+                <section class="p-3" id="comments-wrapper"></section>
+            </div>
+        </div>
+        <script src="./js/jquery.min.js"></script>
+        <script src="./bootstrap/dist/js/bootstrap.min.js"></script>
+        <script>
+            $(document).ready(() => {
+                setTimeout(() => $(".alert").alert(), 5000);
+            });
+            window.addEventListener("load", getAllComments);
+            const commnet_form = document.querySelector("#comment_form");
+            const submit_button = document.querySelector('button[type="submit"] span');
+            const alert_box = document.querySelector(".alert-box");
+            commnet_form.addEventListener("submit", (e) => {
+                e.preventDefault();
+                postCommnet();
+            });
+            const comments_wrapper = document.querySelector("#comments-wrapper");
+            async function getAllComments() {
+                try {
+                    comments_wrapper.innerHTML = " <h3>Loading</h3>";
+                    let result = await fetch("http://localhost:4000/approved_comments");
+                    let { data } = await result.json();
+                    LoadCommentsToDOM(data);
+                } catch (error) {
+                    comments_wrapper.innerHTML = " <h3>Error loading Comments</h3>";
+                }
+            }
+
+            async function postCommnet() {
+                try {
+                    submit_button.innerHTML = null;
+                    submit_button.className = "spinner-border spinner-border-sm";
+                    const formData = new FormData(commnet_form);
+                    const name = formData.get("name").trim();
+                    const comment = formData.get("comment").trim();
+                    let response = await fetch("http://localhost:4000/post_comment", {
+                        body: JSON.stringify({ name, comment }),
+                        method: "post",
+                        headers: {
+                            "content-type": "application/json",
+                            accept: "*/*",
+                        },
+                    });
+                    let { data } = await response.json();
+                    commnet_form.reset();
+                    LoadCommentsToDOM(data);
+                    submit_button.innerHTML = "Submit";
+                    submit_button.className = "";
+                    alert_box.innerHTML =
+                        "Your comment has been sent, an Admin will Aprove it shortly!";
+                    alert_box.className = "alert alert-success my-3";
+
+                    setTimeout(() => {
+                        alert_box.innerHTML = null;
+                        alert_box.className = "";
+                    }, 5000);
+                } catch (error) {
+                    console.log(error);
+                    alert_box.innerHTML = "Your comment could not be posted,please try again";
+                    alert_box.className = "alert alert-danger my-3";
+
+                    setTimeout(() => {
+                        alert_box.innerHTML = null;
+                        alert_box.className = "";
+                    }, 5000);
+                }
+            }
+
+            function LoadCommentsToDOM(comments) {
+                let comments_storage = [];
+                comments.forEach((element) => {
+                    comments_storage.push(
+                        `<div class="jumbotron p-3 mb-4 shadow-md">
+                        <div class="comment-header d-flex flex-direction-row align-items-center">
+                            <div class="avatar justify-content-center align-items-center">
+                                <span class="glyphicon glyphicon-user"></span>
+                            </div>
+                            <p class="lead p-0 m-0 d-flex  align-items-center">
+                                ${element.name}<span class="dot"></span>
+                                <span class="text-muted">${element.date}</span>
+                            </p>
+                        </div>
+                        <p class="pt-2">
+                            ${element.comment}
+                        </p>
+                    </div>`
+                    );
+                });
+                if (comments_storage.length === 0)
+                    comments_wrapper.innerHTML = " <h3>No Comments!</h3>";
+                else comments_wrapper.innerHTML = comments_storage.join("");
+            }
+        </script>
+    </body>
+</html>
