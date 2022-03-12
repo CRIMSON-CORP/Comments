@@ -11,18 +11,13 @@ const {
 const mysql = require("mysql");
 
 const connection = mysql.createPool({
-    user: "crimson",
-    database: "comments",
-    host: "3c04095a-248f-4b9c-be14-3207423debd1.aws.ybdb.io",
-    password: "crimsonComments",
-    connectTimeout: 60 * 60 * 1000,
-    acquireTimeout: 60 * 60 * 1000,
-    timeout: 60 * 60 * 1000,
-    port: 5433,
-    // this object will be passed to the TLSSocket constructor
-    ssl: {
-        rejectUnauthorized: false,
-    },
+    user: "b3365554da4771",
+    database_url:
+        "mysql://b3365554da4771:39e70696@eu-cdbr-west-02.cleardb.net/heroku_c37f37357b31eb0?reconnect=true",
+    host: "eu-cdbr-west-02.cleardb.net",
+    password: "39e70696",
+    port: 3306,
+    databse: "heroku_c37f37357b31eb0",
 });
 
 connection.query(
