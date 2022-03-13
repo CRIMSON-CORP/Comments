@@ -46,14 +46,15 @@
                 </div>
             </div>
         </div>
+        <script src="./js/jquery.min.js"></script>
+        <script src="./bootstrap/dist/js/bootstrap.bundle.min.js"></script>
         <script>
-            const form = document.getElementById("auth");
-            const alertBox = document.querySelector(".alert-box");
-            const submit = document.querySelector("button[type='submit'] span");
+            const form = document.querySelector("#auth");
+            const alertBox = $(".alert-box");
+            const submit = $("button[type='submit'] span");
             form.addEventListener("submit", async (e) => {
                 e.preventDefault();
-                submit.className = "spinner-border spinner-border-sm";
-                submit.innerHTML = null;
+                submit.text(null).addClass("spinner-border spinner-border-sm");
                 const formData = new FormData(form);
                 const username = formData.get("username").trim();
                 const password = formData.get("password").trim();
@@ -70,28 +71,41 @@
                         }),
                     });
                     const data = await response.json();
-                    if (!data.success) {
-                        alertBox.innerHTML = `<div class="alert alert-danger" role="alert">
-                            <strong>${data.message}</strong>
-                        </div>`;
-
+                    if (data.success) {
+                        alertBox.html(`<div
+                            class="alert alert-success my-3 alert-dismissible fade show"
+                            role="alert"
+                        >
+                            <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Close"
+                            ></button>
+                            <h4 class="alert-heading">Login successfull!</h4>
+                            <p>Signing you in...</p>
+                        </div>`);
                         setTimeout(() => {
-                            alertBox.innerHTML = null;
+                            window.location.href = "/admin.html";
                         }, 3000);
                     } else {
-                        alertBox.innerHTML = `<div class="alert alert-success" role="alert">
-                            <strong>${data.message}</strong>
-                        </div>`;
-
-                        setTimeout(() => {
-                            alertBox.innerHTML = null;
-                            location.href = "/admin.html";
-                        }, 3000);
+                        alertBox.html(`<div
+                            class="alert alert-danger my-3 alert-dismissible fade show"
+                            role="alert"
+                        >
+                            <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Close"
+                            ></button>
+                            <h4 class="alert-heading">Failed to login!</h4>
+                            <p>${data.message}</p>
+                        </div>`);
                     }
                 } catch (error) {
                 } finally {
-                    submit.className = "";
-                    submit.innerHTML = "Submit";
+                    submit.text("Submit").removeClass("spinner-border spinner-border-sm");
                 }
             });
         </script>
