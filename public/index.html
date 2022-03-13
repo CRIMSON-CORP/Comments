@@ -59,7 +59,34 @@
                             required
                         ></textarea>
                     </div>
-                    <div class="alert-box"></div>
+                    <div class="alert-box">
+                        <div
+                            class="alert alert-success my-3 alert-dismissible fade show"
+                            role="alert"
+                        >
+                            <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Close"
+                            ></button>
+                            <h4 class="alert-heading">Comment Sent!</h4>
+                            <p>Your comment has been sent, an Admin will Aprove it shortly!</p>
+                        </div>
+                        <div
+                            class="alert alert-danger my-3 alert-dismissible fade show"
+                            role="alert"
+                        >
+                            <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Close"
+                            ></button>
+                            <h4 class="alert-heading">Comment faild to Send</h4>
+                            <p>Your comment could not be posted,please try again</p>
+                        </div>
+                    </div>
                     <div class="mt-3">
                         <button type="submit" class="btn btn-primary"><span>Submit</span></button>
                         <button type="reset" class="btn btn-secondary">Reset</button>
@@ -72,34 +99,33 @@
             </div>
         </div>
         <script src="./js/jquery.min.js"></script>
-        <script src="./bootstrap/dist/js/bootstrap.min.js"></script>
+        <script src="./bootstrap/dist/js/bootstrap.bundle.min.js"></script>
         <script>
-            $(document).ready(() => {
-                setTimeout(() => $(".alert").alert(), 5000);
-            });
-            window.addEventListener("load", getAllComments);
             const commnet_form = document.querySelector("#comment_form");
-            const submit_button = document.querySelector('button[type="submit"] span');
-            const alert_box = document.querySelector(".alert-box");
+            const submit_button = $('button[type="submit"] span');
+            const alert_success = $(".alert-box .alert-success");
+            const alert_danger = $(".alert-box .alert-danger");
+            alert_success.hide(0);
+            alert_danger.hide(0);
+            $(window).on("load", getAllComments);
             commnet_form.addEventListener("submit", (e) => {
                 e.preventDefault();
                 postCommnet();
             });
-            const comments_wrapper = document.querySelector("#comments-wrapper");
+            const comments_wrapper = $("#comments-wrapper");
             async function getAllComments() {
                 try {
-                    comments_wrapper.innerHTML = " <h3>Loading</h3>";
+                    comments_wrapper.html("<h3>Loading</h3>");
                     let result = await fetch("http://localhost:4000/approved_comments");
                     let { data } = await result.json();
                     LoadCommentsToDOM(data);
                 } catch (error) {
-                    comments_wrapper.innerHTML = " <h3>Error loading Comments</h3>";
+                    comments_wrapper.html("<h3>Error loading Comments</h3>");
                 }
             }
             async function postCommnet() {
                 try {
-                    submit_button.innerHTML = null;
-                    submit_button.className = "spinner-border spinner-border-sm";
+                    submit_button.text(null).addClass("spinner-border spinner-border-sm");
                     const formData = new FormData(commnet_form);
                     const name = formData.get("name").trim();
                     const comment = formData.get("comment").trim();
@@ -114,25 +140,13 @@
                     let { data } = await response.json();
                     commnet_form.reset();
                     LoadCommentsToDOM(data);
-                    submit_button.innerHTML = "Submit";
-                    submit_button.className = "";
-                    alert_box.innerHTML =
-                        "Your comment has been sent, an Admin will Aprove it shortly!";
-                    alert_box.className = "alert alert-success my-3";
-
-                    setTimeout(() => {
-                        alert_box.innerHTML = null;
-                        alert_box.className = "";
-                    }, 5000);
+                    submit_button.text("Submit").removeClass("spinner-border spinner-border-sm");
+                    alert_danger.hide();
+                    alert_success.slideDown();
                 } catch (error) {
                     console.log(error);
-                    alert_box.innerHTML = "Your comment could not be posted,please try again";
-                    alert_box.className = "alert alert-danger my-3";
-
-                    setTimeout(() => {
-                        alert_box.innerHTML = null;
-                        alert_box.className = "";
-                    }, 5000);
+                    alert_danger.slideDown();
+                    alert_success.hide();
                 }
             }
 
@@ -156,9 +170,8 @@
                     </div>`
                     );
                 });
-                if (comments_storage.length === 0)
-                    comments_wrapper.innerHTML = " <h3>No Comments!</h3>";
-                else comments_wrapper.innerHTML = comments_storage.join("");
+                if (comments_storage.length === 0) comments_wrapper.html("<h3>No Comments!</h3>");
+                else comments_wrapper.html(comments_storage.join(""));
             }
         </script>
     </body>
