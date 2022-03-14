@@ -44,6 +44,18 @@ router.post("/auth", async (req, res) => {
     }
 });
 
+router.get("/all_comments", async (req, res) => {
+    let comments = await DATABASE().SELECTALL();
+    let approved = await DATABASE().SELECTALL_APPROVED();
+    if (comments && approved) {
+        comments.map((d) => (d.date = timeAgo.format(parseInt(d.date))));
+        approved.map((d) => (d.date = timeAgo.format(parseInt(d.date))));
+        res.send(JSON.stringify({ success: true, data: [comments, approved] }));
+    } else {
+        res.send(JSON.stringify({ success: false }));
+    }
+});
+
 router.get("/approved_comments", async (req, res) => {
     const data = await DATABASE().SELECTALL_APPROVED();
     data.map((d) => (d.date = timeAgo.format(parseInt(d.date))));

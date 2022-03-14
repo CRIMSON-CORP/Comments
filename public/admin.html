@@ -48,193 +48,182 @@
             </div>
             <div class="row">
                 <h1 class="display-3">Approved Comments!</h1>
-                <section class="p-3" id="approved-comments-wrapper"></section>
+                <section class="p-3 approved-comments-wrapper"></section>
             </div>
         </div>
-
+        <script src="./js/jquery.min.js"></script>
+        <script src="./bootstrap/dist/js/bootstrap.bundle.min.js"></script>
         <script>
             window.addEventListener("load", async () => {
                 await fetchAllComments();
             });
+            const comments_wrapper = $("#comments-wrapper");
+            const approved_comments_wrapper = $(".approved-comments-wrapper");
+            const alertBox = $(".alert-box");
 
             async function fetchAllComments() {
-                await getAllComments();
-                await getAllApprovedComments();
-            }
-            const comments_wrapper = document.querySelector("#comments-wrapper");
-            const approved_comments_wrapper = document.querySelector("#approved-comments-wrapper");
-            const alertBox = document.querySelector(".alert-box");
-            async function getAllComments() {
                 try {
-                    comments_wrapper.innerHTML = " <h3>Loading</h3>";
-                    let result = await fetch("http://localhost:4000/comments");
-                    let { data } = await result.json();
-                    LoadCommentsToDOM(data);
+                    Alert("info", "Loading...", null, false).show();
+                    let result = await fetch("http://localhost:4000/all_comments");
+                    let { success, data } = await result.json();
+                    if (success) {
+                        const [comments, approved] = data;
+                        LoadCommentsToDOM(comments, comments_wrapper);
+                        LoadCommentsToDOM(approved, approved_comments_wrapper);
+                        Alert().dismiss();
+                    } else {
+                        Alert("danger", "Error loading Comments", "Error");
+                    }
                 } catch (error) {
-                    comments_wrapper.innerHTML =
-                        "<h3 class='text-danger'>Error loading Comments</h3>";
+                    console.log(error);
+                    Alert("danger", "Error loading Comments", "Error");
                 }
             }
 
-            async function getAllApprovedComments() {
-                try {
-                    approved_comments_wrapper.innerHTML = " <h3>Loading</h3>";
-                    let result = await fetch("http://localhost:4000/approved_comments");
-                    let { data } = await result.json();
-                    LoadApprovedCommentsToDOM(data);
-                } catch (error) {
-                    approved_comments_wrapper.innerHTML =
-                        "<h3 class='text-danger'>Error loading Comments</h3>";
-                }
-            }
-
-            function LoadCommentsToDOM(comments) {
+            function LoadCommentsToDOM(comments, parent) {
                 let comments_storage = [];
                 comments.forEach((element) => {
                     comments_storage.push(
                         `<div class="jumbotron p-3 mb-4 shadow-md">
-                        <div class="comment-header d-flex flex-direction-row align-items-center">
-                            <div class="avatar justify-content-center align-items-center">
-                                <span class="glyphicon glyphicon-user"></span>
-                            </div>
-                            <p class="lead p-0 m-0 d-flex  align-items-center">
-                                ${element.name}<span class="dot"></span>
-                                <span class="text-muted">${element.date}</span>
-                            </p>
-                        </div>
-                        <p class="pt-2">
-                            ${element.comment}
-                        </p>
-                        <p class="lead">
-                            <button class="btn btn-success btn-lg" onclick="approveComment('${element.id}','${element.name}' ,this)" role="button"><span>Approve</span></button>
-                            <button class="btn btn-danger btn-lg" onclick="deleteComment('${element.id}','${element.name}',  this)" role="button"><span>Delete</span></button>
-                        </p>
-                    </div>`
+                                    <div class="comment-header d-flex flex-direction-row align-items-center">
+                                        <div class="avatar justify-content-center align-items-center">
+                                            <span class="glyphicon glyphicon-user"></span>
+                                        </div>
+                                        <p class="lead p-0 m-0 d-flex  align-items-center">
+                                            ${element.name}<span class="dot"></span>
+                                            <span class="text-muted">${element.date}</span>
+                                        </p>
+                                    </div>
+                                    <p class="pt-2">
+                                        ${element.comment}
+                                    </p>
+                                    <p class="lead">
+                                        <button class="btn btn-success btn-lg" onclick="${
+                                            parent.hasClass("approved-comments-wrapper")
+                                                ? "unapproveComment(" +
+                                                  element.id +
+                                                  ", '" +
+                                                  element.name +
+                                                  "',  this)"
+                                                : "approveComment(" +
+                                                  element.id +
+                                                  ",'" +
+                                                  element.name +
+                                                  "',  this)"
+                                        }" role="button"><span>${
+                            parent.hasClass("approved-comments-wrapper") ? "Unapprove" : "Approve"
+                        }</span></button>
+                                        <button class="btn btn-danger btn-lg" onclick="deleteComment('${
+                                            element.id
+                                        }','${
+                            element.name
+                        }',  this)" role="button"><span>Delete</span></button>
+                                    </p>
+                                </div>`
                     );
                 });
-                if (comments_storage.length === 0)
-                    comments_wrapper.innerHTML = " <h3>No Comments!</h3>";
-                else comments_wrapper.innerHTML = comments_storage.join("");
+                if (comments_storage.length === 0) parent.html("<h3>No Comments!</h3>");
+                else parent.html(comments_storage.join(""));
             }
 
-            function LoadApprovedCommentsToDOM(comments) {
-                let comments_storage = [];
-                comments.forEach((element) => {
-                    comments_storage.push(
-                        `<div class="jumbotron p-3 mb-4 shadow-md">
-                        <div class="comment-header d-flex flex-direction-row align-items-center">
-                            <div class="avatar justify-content-center align-items-center">
-                                <span class="glyphicon glyphicon-user"></span>
-                            </div>
-                            <p class="lead p-0 m-0 d-flex  align-items-center">
-                                ${element.name}<span class="dot"></span>
-                                <span class="text-muted">${element.date}</span>
-                            </p>
-                        </div>
-                        <p class="pt-2">
-                            ${element.comment}
-                        </p>
-                        <p class="lead">
-                            <button class="btn btn-primary btn-lg" onclick="unapproveComment('${element.id}','${element.name}',  this)" role="button"><span>Unapprove</span></button>
-                            <button class="btn btn-danger btn-lg" onclick="deleteComment('${element.id}','${element.name}',  this)" role="button"><span>Delete</span></button>
-                        </p>
-                    </div>`
-                    );
-                });
-                if (comments_storage.length === 0)
-                    approved_comments_wrapper.innerHTML = " <h3>No Comments!</h3>";
-                else approved_comments_wrapper.innerHTML = comments_storage.join("");
+            async function approveComment(commentors_id, commentors_name, button) {
+                return await buttonActions(commentors_id, commentors_name, button, "approve");
+            }
+            async function deleteComment(commentors_id, commentors_name, button) {
+                return await buttonActions(
+                    commentors_id,
+                    commentors_name,
+                    button,
+                    "delete_comment"
+                );
+            }
+            async function unapproveComment(commentors_id, commentors_name, button) {
+                return await buttonActions(commentors_id, commentors_name, button, "unapprove");
             }
 
-            async function approveComment(commentors_id, commentors_name, parent) {
-                const span = parent.querySelector("span");
+            async function buttonActions(id, name, button, action) {
+                let url, success_comment, failure_comment;
+                switch (action) {
+                    case "approve":
+                        {
+                            (url = "approve_comment"),
+                                (success_comment = `You Approved ${name}'s Comment!`);
+                            failure_comment = `Error Approving Comment!`;
+                        }
+                        break;
+                    case "unapprove":
+                        {
+                            (url = "unapprove_comment"),
+                                (success_comment = `You Unapproved ${name}'s Comment!`);
+                            failure_comment = `Error Unapproving Comment!`;
+                        }
+                        break;
+                    case "delete_comment":
+                        {
+                            (url = "delete_comment"),
+                                (success_comment = `You Deleted ${name}'s Comment!`),
+                                (failure_comment = "Error Deleting Comment!");
+                        }
+                        break;
+                    default:
+                        return null;
+                }
+                const span = button.querySelector("span");
+                const spanText = span.innerHTML;
                 span.className = "spinner-border spinner-border-sm";
                 span.innerHTML = null;
+
                 try {
-                    let result = await fetch("http://localhost:4000/approve_comment", {
+                    let result = await fetch(`http://localhost:4000/${url}`, {
                         headers: {
                             "content-type": "application/json",
                             accept: "*/*",
                         },
-                        method: "POST",
-                        body: JSON.stringify({ id: commentors_id }),
+                        method: action === "delete_comment" ? "DELETE" : "POST",
+                        body: JSON.stringify({ id }),
                     });
                     let data = await result.json();
                     if (data.success) {
-                        alertBox.innerHTML = `<div class="alert alert-success" role="alert">
-                            <strong>You Approved ${commentors_name}'s Comment!</strong>
-                        </div>`;
+                        await fetchAllComments();
+                        Alert("success", success_comment, null).show();
                     }
-                    return await fetchAllComments();
+                    return;
                 } catch (error) {
-                    alertBox.innerHTML = `<div class="alert alert-danger" role="alert">
-                            <strong>Error Approving Comment!</strong>
-                        </div>`;
+                    Alert("danger", failure_comment, null).show();
                 } finally {
                     span.className = "";
-                    span.innerHTML = "Approve";
-                    setTimeout(() => (alertBox.innerHTML = null), 3000);
+                    span.innerHTML = spanText;
                 }
             }
-            async function deleteComment(commentors_id, commentors_name, parent) {
-                const span = parent.querySelector("span");
-                span.className = "spinner-border spinner-border-sm";
-                span.innerHTML = null;
-                try {
-                    let result = await fetch("http://localhost:4000/delete_comment", {
-                        headers: {
-                            "content-type": "application/json",
-                            accept: "*/*",
-                        },
-                        method: "DELETE",
-                        body: JSON.stringify({ id: commentors_id }),
-                    });
-                    let data = await result.json();
-                    if (data.success) {
-                        alertBox.innerHTML = `<div class="alert alert-success" role="alert">
-                            <strong>You Deleted ${commentors_name}'s Comment!</strong>
+
+            function Alert(class_name = "success", message, header, button = true) {
+                const html = `<div
+                            class="alert alert-${class_name} my-3 alert-dismissible fade show"
+                            role="alert"
+                        >
+                            ${
+                                button
+                                    ? `<button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Close"
+                            ></button>`
+                                    : ""
+                            }
+                             ${
+                                 header
+                                     ? `
+                                 <h4 class="alert-heading">${header}</h4>`
+                                     : ""
+                             }
+                            <p class="m-0">${message}</p>
                         </div>`;
-                    }
-                    return await fetchAllComments();
-                } catch (error) {
-                    alertBox.innerHTML = `<div class="alert alert-danger" role="alert">
-                            <strong>Error Deleting Comment!</strong>
-                        </div>`;
-                } finally {
-                    span.className = "";
-                    span.innerHTML = "Delete";
-                    setTimeout(() => (alertBox.innerHTML = null), 3000);
-                }
-            }
-            async function unapproveComment(commentors_id, commentors_name, parent) {
-                const span = parent.querySelector("span");
-                span.className = "spinner-border spinner-border-sm";
-                span.innerHTML = null;
-                try {
-                    let result = await fetch("http://localhost:4000/unapprove_comment", {
-                        headers: {
-                            "content-type": "application/json",
-                            accept: "*/*",
-                        },
-                        method: "POST",
-                        body: JSON.stringify({ id: commentors_id }),
-                    });
-                    let data = await result.json();
-                    if (data.success) {
-                        alertBox.innerHTML = `<div class="alert alert-success" role="alert">
-                            <strong>You Unapproved ${commentors_name}'s Comment!</strong>
-                        </div>`;
-                    }
-                    return await fetchAllComments();
-                } catch (error) {
-                    alertBox.innerHTML = `<div class="alert alert-danger" role="alert">
-                            <strong>Error Unapproving Comment!</strong>
-                        </div>`;
-                } finally {
-                    span.className = "";
-                    span.innerHTML = "Unapprove";
-                    setTimeout(() => (alertBox.innerHTML = null), 3000);
-                }
+
+                return {
+                    dismiss: () => alertBox.html(null),
+                    show: () => alertBox.html(html),
+                };
             }
         </script>
     </body>
