@@ -41,6 +41,7 @@
     </head>
     <body>
         <div class="container mt-5">
+            <!-- This part is regular HTML -->
             <div class="row">
                 <h1 class="display-3">Please write a comment!</h1>
                 <form id="comment_form">
@@ -101,34 +102,64 @@
         <script src="./js/jquery.min.js"></script>
         <script src="./bootstrap/dist/js/bootstrap.bundle.min.js"></script>
         <script>
-            const commnet_form = document.querySelector("#comment_form");
+            // Grabbing elements that i'd be working with from the DOM
+            // note that im not using jquery to grab the form as i want
+            //  to use javascript native FormData API
+            const comment_form = document.querySelector("#comment_form");
             const submit_button = $('button[type="submit"] span');
             const alert_success = $(".alert-box .alert-success");
             const alert_danger = $(".alert-box .alert-danger");
+            const comments_wrapper = $("#comments-wrapper");
+
+            // Hidding Alert Box by default
             alert_success.hide(0);
             alert_danger.hide(0);
+
+            // gets all comments from the backend on Page load
             $(window).on("load", getAllComments);
-            commnet_form.addEventListener("submit", (e) => {
-                e.preventDefault();
-                postCommnet();
-            });
-            const comments_wrapper = $("#comments-wrapper");
+
             async function getAllComments() {
                 try {
+                    // Im setting the html of the wrapper to Loading text
+                    // just to indicate that the form is loading
                     comments_wrapper.html("<h3>Loading</h3>");
+
+                    // here i make a request to the backend to fetch all approved comments
                     let result = await fetch("http://localhost:4000/approved_comments");
+                    // here i get the data returned from the backend
                     let { data } = await result.json();
+                    // this function loads the data into the DOM
                     LoadCommentsToDOM(data);
                 } catch (error) {
+                    // here i indicate that there has been an error with the request
+                    //if there is any error
                     comments_wrapper.html("<h3>Error loading Comments</h3>");
                 }
             }
+
+            // Event listener to post a Comment
+            comment_form.addEventListener("submit", (e) => {
+                // preventDeault stops page from reloading when user submits the form
+                e.preventDefault();
+
+                // function to post a comment
+                postCommnet();
+            });
+
             async function postCommnet() {
                 try {
+                    // here im removing the text from the submit button
+                    // and adding loader class from bootstrap to signify loading state
                     submit_button.text(null).addClass("spinner-border spinner-border-sm");
-                    const formData = new FormData(commnet_form);
+
+                    // here im creating a new form instance with the form API
+                    const formData = new FormData(comment_form);
+
+                    // here i grab the in put values from the form
                     const name = formData.get("name").trim();
                     const comment = formData.get("comment").trim();
+
+                    // here i make a request to the backend to post a comment
                     let response = await fetch("http://localhost:4000/post_comment", {
                         body: JSON.stringify({ name, comment }),
                         method: "post",
@@ -138,12 +169,19 @@
                         },
                     });
                     let { data } = await response.json();
-                    commnet_form.reset();
-                    LoadCommentsToDOM(data);
+
+                    // here i clear the inputs of the form
+                    comment_form.reset();
+
+                    // here i revert the submit button
                     submit_button.text("Submit").removeClass("spinner-border spinner-border-sm");
+
+                    // at this point in the code there are no errors
+                    // so i hide the error alert and show the success alert
                     alert_danger.hide();
                     alert_success.slideDown();
                 } catch (error) {
+                    // if there are any errors, i just do the opposite
                     console.log(error);
                     alert_danger.slideDown();
                     alert_success.hide();
@@ -151,7 +189,10 @@
             }
 
             function LoadCommentsToDOM(comments) {
+                // the comments argument contains all the comments
                 let comments_storage = [];
+
+                // for each comment, i create a card or html container
                 comments.forEach((element) => {
                     comments_storage.push(
                         `<div class="jumbotron p-3 mb-4 shadow-md">
@@ -170,7 +211,10 @@
                     </div>`
                     );
                 });
+
+                // if there are no comments, in just say no comments
                 if (comments_storage.length === 0) comments_wrapper.html("<h3>No Comments!</h3>");
+                // else i stuff the comments in
                 else comments_wrapper.html(comments_storage.join(""));
             }
         </script>

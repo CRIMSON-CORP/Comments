@@ -21,9 +21,8 @@ router.get("/comments", async (_, res) => {
 
 router.post("/post_comment", async (req, res) => {
     const { name, comment } = req.body;
-    const data = await DATABASE().INSERT(name, comment);
-    data.map((d) => (d.date = timeAgo.format(parseInt(d.date))));
-    res.send(JSON.stringify({ data }));
+    await DATABASE().INSERT(name, comment);
+    res.send(JSON.stringify({ success: true }));
 });
 
 router.get("/admin", (_, res) => {

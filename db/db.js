@@ -51,12 +51,10 @@ function DATABASE() {
                     connection.query(query, [name, comment, Date.now()], async (err, data) => {
                         if (err) {
                             reject(err);
-                        } else {
-                            resolve(await this.SELECTALL_APPROVED());
                         }
                     });
                 });
-                return data;
+                return;
             } catch (error) {
                 console.log();
             }
